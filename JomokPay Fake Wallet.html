@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JomokPay - Layanan Dompet Digital Terpercaya</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                    },
+                    colors: {
+                        jomok: {
+                            50: '#f5f3ff',
+                            100: '#ede9fe',
+                            500: '#8b5cf6',
+                            600: '#7c3aed',
+                            700: '#6d28d9',
+                            900: '#4c1d95',
+                            dark: '#0f0728'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom Styles & Animations */
+        body {
+            background-color: #090314;
+            color: #f3f4f6;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        .app-container {
+            max-width: 430px;
+            min-height: 100vh;
+            margin: 0 auto;
+            background: #130a2a;
+            position: relative;
+            box-shadow: 0 0 50px rgba(124, 58, 237, 0.25);
+            display: flex;
+            flex-direction: column;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .gradient-btn {
+            background: linear-gradient(135deg, #a855f7 0%, #6366f1 100%);
+        }
+        .gold-gradient {
+            background: linear-gradient(135deg, #fef08a 0%, #eab308 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        @keyframes pulse-glow {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 0.8; }
+        }
+        .glow-effect {
+            animation: pulse-glow 3s infinite ease-in-out;
+        }
+        /* QR Laser animation */
+        @keyframes scan-laser {
+            0% { top: 0%; }
+            50% { top: 90%; }
+            100% { top: 0%; }
+        }
+        .laser-line {
+            position: absolute;
+            width: 100%;
+            height: 3px;
+            background: #a855f7;
+            box-shadow: 0 0 15px #a855f7, 0 0 30px #a855f7;
+            animation: scan-laser 2s infinite ease-in-out;
+        }
+    </style>
+</head>
+<body class="font-sans antialiased">
+
+<div class="app-container pb-24">
+    
+    <!-- TOP BAR / HEADER -->
+    <header class="p-4 pt-6 flex items-center justify-between sticky top-0 z-30 bg-[#130a2a]/90 backdrop-blur-md border-b border-white/5">
+        <div class="flex items-center gap-3">
+            <div class="relative cursor-pointer" onclick="openProfileModal()">
+                <div class="w-11 h-11 rounded-full bg-gradient-to-tr from-purple-500 to-indigo-500 p-0.5 shadow-lg">
+                    <img id="header-avatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=Rusdi" alt="Avatar" class="w-full h-full rounded-full bg-slate-900 object-cover">
+                </div>
+                <span class="absolute -bottom-1 -right-1 bg-yellow-500 text-[9px] font-black text-black px-1 rounded-full border border-black">VIP</span>
+            </div>
+            <div>
+                <div class="flex items-center gap-1 cursor-pointer" onclick="openProfileModal()">
+                    <h2 id="header-username" class="font-bold text-sm tracking-wide text-white">Rusdi Ngawi</h2>
+                    <svg class="w-3.5 h-3.5 text-blue-400" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"></path></svg>
+                </div>
+                <p class="text-[11px] text-blue-300/90 font-medium">Akun Terverifikasi (Premier)</p>
+            </div>
+        </div>
+        
+        <div class="flex items-center gap-2">
+            <button onclick="triggerSound('pop'); showToast('🔒 Keamanan Sistem: Akun Anda Dilindungi Enkripsi 256-bit')" class="p-2 rounded-full glass-card hover:bg-white/10 active:scale-95 transition">
+                <svg class="w-5 h-5 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+            </button>
+            <button onclick="triggerSound('pop'); switchTab('saya')" class="p-2 rounded-full glass-card hover:bg-white/10 active:scale-95 transition">
+                <svg class="w-5 h-5 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+            </button>
+        </div>
+    </header>
+
+    <!-- MAIN TAB CONTENT CONTAINER -->
+    <main id="main-content" class="flex-1 px-4 pt-3">
+
+        <div id="tab-beranda" class="space-y-4">
+
+            <!-- STERN WARNING BANNER AGAINST SUKI & SUKIPAY -->
+            <div class="bg-gradient-to-r from-red-950 via-red-900 to-amber-950 border-2 border-red-500/80 rounded-2xl p-3.5 shadow-2xl relative overflow-hidden">
+                <div class="absolute -right-4 -bottom-4 w-20 h-20 bg-red-500/10 rounded-full blur-xl"></div>
+                <div class="flex items-start gap-3">
+                    <div class="p-2 bg-red-600/30 text-red-400 rounded-xl border border-red-500/40 shrink-0 mt-0.5">
+                        <svg class="w-6 h-6 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                        </svg>
+                    </div>
+                    <div class="space-y-1">
+                        <div class="flex items-center gap-2">
+                            <span class="bg-red-600 text-white font-extrabold text-[9px] px-2 py-0.5 rounded tracking-wider uppercase">PERINGATAN KERAS</span>
+                            <span class="text-[10px] text-red-300 font-semibold">SECURITY ALERT</span>
+                        </div>
+                        <h3 class="font-extrabold text-xs text-white uppercase tracking-wide">WASPADA PERETASAN SALDO OLEH SUKI!</h3>
+                        <p class="text-[11px] text-red-200/95 leading-relaxed font-medium">
+                            Sistem mendeteksi indikasi kejahatan peretasan akun dari <strong class="text-yellow-300">SUKI</strong>. 
+                            <span class="underline decoration-red-400 font-bold text-white">DILARANG KERAS</span> melakukan transfer uang ke <strong class="text-yellow-300">SukiPay</strong> atau membagikan kode OTP/PIN Anda!
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- MAIN BALANCE CARD -->
+            <div class="relative overflow-hidden rounded-3xl p-6 bg-gradient-to-br from-indigo-900 via-purple-900 to-slate-950 border border-purple-500/30 shadow-2xl">
+                <!-- Glowing background circles -->
+                <div class="absolute -right-8 -top-8 w-32 h-32 bg-purple-500/20 rounded-full blur-2xl"></div>
+                <div class="absolute -left-8 -bottom-8 w-32 h-32 bg-indigo-500/20 rounded-full blur-2xl"></div>
+
+                <div class="flex justify-between items-center mb-2">
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs font-bold uppercase tracking-wider text-purple-200">Saldo Utama JomokCash</span>
+                        <button onclick="toggleBalanceVisibility()" class="text-purple-300 hover:text-white transition">
+                            <svg id="eye-icon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                        </button>
+                    </div>
+                    <span class="text-[10px] bg-emerald-500/20 text-emerald-300 px-2.5 py-1 rounded-full border border-emerald-400/30 font-semibold flex items-center gap-1">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Aman
+                    </span>
+                </div>
+
+                <div class="mb-5">
+                    <h1 id="balance-display" class="text-3xl font-extrabold text-white tracking-tight font-mono">Rp 999.850.000.000</h1>
+                    <p id="hidden-balance-display" class="text-3xl font-extrabold text-white tracking-widest hidden font-mono">•••••••••••••</p>
+                </div>
+
+                <div class="flex items-center justify-between pt-2 border-t border-white/10 text-xs">
+                    <div class="flex items-center gap-1.5">
+                        <span class="text-gray-300 font-medium">JomokPoints:</span>
+                        <span class="gold-gradient font-bold" id="coins-display">69.420.000 Pts</span>
+                    </div>
+                    <button onclick="openTopUpModal()" class="text-purple-300 hover:text-white font-semibold flex items-center gap-1">
+                        <span>Isi Saldo</span>
+                        <span>&gt;</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- QUICK ACTION BUTTONS -->
+            <div class="grid grid-cols-4 gap-3">
+                <button onclick="openTransferModal()" class="flex flex-col items-center gap-2 p-3 rounded-2xl glass-card hover:bg-white/10 active:scale-95 transition">
+                    <div class="w-12 h-12 rounded-2xl bg-purple-600/30 text-purple-300 flex items-center justify-center border border-purple-400/30 shadow-inner">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+                    </div>
+                    <span class="text-xs font-semibold text-gray-200">Kirim</span>
+                </button>
+
+                <button onclick="openRequestModal()" class="flex flex-col items-center gap-2 p-3 rounded-2xl glass-card hover:bg-white/10 active:scale-95 transition">
+                    <div class="w-12 h-12 rounded-2xl bg-indigo-600/30 text-indigo-300 flex items-center justify-center border border-indigo-400/30 shadow-inner">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                    </div>
+                    <span class="text-xs font-semibold text-gray-200">Minta</span>
+                </button>
+
+                <button onclick="openTopUpModal()" class="flex flex-col items-center gap-2 p-3 rounded-2xl glass-card hover:bg-white/10 active:scale-95 transition">
+                    <div class="w-12 h-12 rounded-2xl bg-amber-600/30 text-amber-300 flex items-center justify-center border border-amber-400/30 shadow-inner">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                    </div>
+                    <span class="text-xs font-semibold text-gray-200">Top Up</span>
+                </button>
+
+                <button onclick="switchTab('scan')" class="flex flex-col items-center gap-2 p-3 rounded-2xl glass-card hover:bg-white/10 active:scale-95 transition">
+                    <div class="w-12 h-12 rounded-2xl bg-emerald-600/30 text-emerald-300 flex items-center justify-center border border-emerald-400/30 shadow-inner">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path></svg>
+                    </div>
+                    <span class="text-xs font-semibold text-gray-200">Bayar QRIS</span>
+                </button>
+            </div>
+
+            <!-- MAIN SERVICES GRID -->
+            <div>
+                <div class="flex justify-between items-center mb-3">
+                    <h3 class="font-bold text-sm text-gray-200">Layanan Keuangan</h3>
+                    <span class="text-[11px] text-purple-400 font-medium">Lengkap & Cepat</span>
+                </div>
+                <div class="grid grid-cols-4 gap-3">
+                    <div onclick="triggerSound('coin'); showToast('📱 Layanan Pulsa & Paket Data Siap')" class="flex flex-col items-center gap-1.5 p-2.5 rounded-xl bg-white/5 hover:bg-white/10 cursor-pointer transition">
+                        <div class="text-2xl">📱</div>
+                        <span class="text-[11px] font-medium text-center text-gray-300">Pulsa & Data</span>
+                    </div>
+                    <div onclick="triggerSound('coin'); showToast('⚡ Pembayaran Listrik PLN')" class="flex flex-col items-center gap-1.5 p-2.5 rounded-xl bg-white/5 hover:bg-white/10 cursor-pointer transition">
+                        <div class="text-2xl">⚡</div>
+                        <span class="text-[11px] font-medium text-center text-gray-300">Listrik PLN</span>
+                    </div>
+                    <div onclick="triggerSound('coin'); showToast('🛵 JomokRide Transportasi Online')" class="flex flex-col items-center gap-1.5 p-2.5 rounded-xl bg-white/5 hover:bg-white/10 cursor-pointer transition">
+                        <div class="text-2xl">🛵</div>
+                        <span class="text-[11px] font-medium text-center text-gray-300">JomokRide</span>
+                    </div>
+                    <div onclick="triggerSound('coin'); showToast('🍕 JomokFood Kuliner Terbaik')" class="flex flex-col items-center gap-1.5 p-2.5 rounded-xl bg-white/5 hover:bg-white/10 cursor-pointer transition">
+                        <div class="text-2xl">🍕</div>
+                        <span class="text-[11px] font-medium text-center text-gray-300">JomokFood</span>
+                    </div>
+                    <div onclick="triggerSound('coin'); showToast('🏦 Transfer Bank Bebas Biaya')" class="flex flex-col items-center gap-1.5 p-2.5 rounded-xl bg-white/5 hover:bg-white/10 cursor-pointer transition">
+                        <div class="text-2xl">🏦</div>
+                        <span class="text-[11px] font-medium text-center text-gray-300">Transfer Bank</span>
+                    </div>
+                    <div onclick="triggerSound('coin'); showToast('💳 Tagihan & BPJS Terintegrasi')" class="flex flex-col items-center gap-1.5 p-2.5 rounded-xl bg-white/5 hover:bg-white/10 cursor-pointer transition">
+                        <div class="text-2xl">💳</div>
+                        <span class="text-[11px] font-medium text-center text-gray-300">Tagihan</span>
+                    </div>
+                    <div onclick="triggerSound('coin'); switchTab('promo')" class="flex flex-col items-center gap-1.5 p-2.5 rounded-xl bg-white/5 hover:bg-white/10 cursor-pointer transition">
+                        <div class="text-2xl">🎰</div>
+                        <span class="text-[11px] font-medium text-center text-gray-300">Lucky Wheel</span>
+                    </div>
+                    <div onclick="triggerSound('coin'); showSukiWarningModal()" class="flex flex-col items-center gap-1.5 p-2.5 rounded-xl bg-red-500/20 hover:bg-red-500/30 border border-red-500/40 cursor-pointer transition">
+                        <div class="text-2xl">🛡️</div>
+                        <span class="text-[11px] font-extrabold text-center text-red-300">Cek Suki</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PROMO BANNER CAROUSEL (PARODY) -->
+            <div class="space-y-2">
+                <h3 class="font-bold text-sm text-gray-200">Promo Hari Ini</h3>
+                <div class="overflow-x-auto hide-scrollbar flex gap-3 pb-2">
+                    <div onclick="triggerSound('fanfare'); showToast('🎉 Voucher Rp 100 Triliun berhasil diklaim!')" class="min-w-[260px] p-4 rounded-2xl bg-gradient-to-r from-pink-600 to-purple-600 flex justify-between items-center cursor-pointer shadow-lg active:scale-95 transition">
+                        <div>
+                            <span class="text-[10px] bg-black/30 text-yellow-300 px-2 py-0.5 rounded-full font-bold uppercase">CASHBACK 100%</span>
+                            <h4 class="font-extrabold text-sm text-white mt-1">Beli Minyak Kayu Putih</h4>
+                            <p class="text-xs text-purple-100">Khusus warga Ngawi VIP</p>
+                        </div>
+                        <div class="text-3xl">🛢️</div>
+                    </div>
+
+                    <div onclick="triggerSound('fanfare'); showToast('🎉 Promo AmbaPay Aktif!')" class="min-w-[260px] p-4 rounded-2xl bg-gradient-to-r from-blue-600 to-cyan-600 flex justify-between items-center cursor-pointer shadow-lg active:scale-95 transition">
+                        <div>
+                            <span class="text-[10px] bg-black/30 text-cyan-200 px-2 py-0.5 rounded-full font-bold uppercase">DISKON 99%</span>
+                            <h4 class="font-extrabold text-sm text-white mt-1">Makan Bakso Mas Agus</h4>
+                            <p class="text-xs text-blue-100">Bayar pakai JomokPay</p>
+                        </div>
+                        <div class="text-3xl">🍜</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RECENT TRANSACTIONS (PARODY) -->
+            <div class="space-y-3">
+                <div class="flex justify-between items-center">
+                    <h3 class="font-bold text-sm text-gray-200">Riwayat Terakhir</h3>
+                    <button onclick="switchTab('riwayat')" class="text-xs text-purple-400 hover:underline">Lihat Semua</button>
+                </div>
+                
+                <div id="home-history-list" class="space-y-2.5">
+                    <!-- Dynamic rendering or default fallback items -->
+                </div>
+            </div>
+
+        </div>
+
+        <div id="tab-riwayat" class="hidden space-y-4">
+            <div class="flex justify-between items-center">
+                <h2 class="text-lg font-bold text-white">Riwayat Transaksi KW</h2>
+                <button onclick="openTransferModal()" class="text-xs bg-purple-600 text-white px-3 py-1.5 rounded-lg font-semibold hover:bg-purple-500 transition">+ Buat Struk</button>
+            </div>
+
+            <p class="text-xs text-purple-300">Klik transaksi di bawah untuk menampilkan/men-screenshot Struk Bukti Transfer Palsu!</p>
+
+            <div id="full-history-list" class="space-y-3">
+                <!-- Populated via JS -->
+            </div>
+        </div>
+
+        <div id="tab-scan" class="hidden space-y-4 text-center">
+            <h2 class="text-lg font-bold text-white">Pemindai QRIS JomokPay</h2>
+            <p class="text-xs text-gray-400">Arahkan kamera ke QRIS toko temanmu atau scan QR buatan untuk prank!</p>
+
+            <!-- SCANNER BOX SIMULATOR -->
+            <div class="relative w-full aspect-square max-w-[300px] mx-auto rounded-3xl overflow-hidden border-2 border-purple-500/50 bg-black flex flex-col items-center justify-center shadow-2xl">
+                <!-- Laser Scanner Animation -->
+                <div class="laser-line"></div>
+                
+                <!-- Camera Fake Lens View -->
+                <div class="absolute inset-0 bg-gradient-to-t from-purple-950/40 via-transparent to-purple-950/40 flex items-center justify-center">
+                    <div class="w-48 h-48 border-2 border-dashed border-white/60 rounded-2xl flex items-center justify-center">
+                        <span class="text-xs text-white/70 font-mono bg-black/60 px-2 py-1 rounded">Mencari QRIS...</span>
+                    </div>
+                </div>
+
+                <div class="absolute bottom-4 left-0 right-0 flex justify-center gap-3 px-4 z-10">
+                    <button onclick="simulateScan('Warung Bakso Mas Agus', 25000)" class="bg-purple-600/90 text-white text-xs px-3 py-2 rounded-xl border border-purple-400/30 hover:bg-purple-500 transition">Scan Bakso Agus (Rp 25.000)</button>
+                    <button onclick="simulateScan('Sewa Rusdi Speedboat', 5000000)" class="bg-indigo-600/90 text-white text-xs px-3 py-2 rounded-xl border border-indigo-400/30 hover:bg-indigo-500 transition">Scan Rusdi (Rp 5 Jt)</button>
+                </div>
+            </div>
+
+            <div class="p-4 rounded-2xl glass-card text-left space-y-2">
+                <p class="text-xs font-semibold text-purple-300">💡 Tips Prank QRIS:</p>
+                <p class="text-[11px] text-gray-300">Tekan salah satu tombol cepat di atas untuk menyimulasikan pembayaran QRIS instan lengkap dengan efek suara transaksi berhasil!</p>
+            </div>
+        </div>
+
+        <div id="tab-promo" class="hidden space-y-5 text-center">
+            <div>
+                <h2 class="text-xl font-extrabold text-white">Roda Keberuntungan Jomok</h2>
+                <p class="text-xs text-purple-300">Putar roda untuk mendapatkan triliunan saldo fiktif!</p>
+            </div>
+
+            <!-- SPIN WHEEL -->
+            <div class="relative w-64 h-64 mx-auto my-4">
+                <!-- Pointer -->
+                <div class="absolute -top-3 left-1/2 -translate-x-1/2 z-20 w-0 h-0 border-l-[12px] border-l-transparent border-r-[12px] border-r-transparent border-t-[20px] border-t-yellow-400 drop-shadow-md"></div>
+                
+                <!-- Canvas Wheel -->
+                <canvas id="wheelCanvas" width="256" height="256" class="w-full h-full rounded-full shadow-2xl border-4 border-purple-500/50"></canvas>
+            </div>
+
+            <button id="spinBtn" onclick="spinWheel()" class="w-full max-w-xs mx-auto py-3.5 rounded-2xl font-extrabold text-white gradient-btn shadow-lg hover:opacity-90 active:scale-95 transition">
+                PUTAR RODA SEKARANG! 🎰
+            </button>
+
+            <div class="p-4 rounded-2xl glass-card text-xs text-gray-300 space-y-1">
+                <p class="font-bold text-yellow-400">Daftar Hadiah Utamamu:</p>
+                <p>• Rp 100.000.000.000 Saldo Cash</p>
+                <p>• Gelar VIP Sultan Ngawi</p>
+                <p>• Bakso Beranak Mas Agus 1 Ton</p>
+            </div>
+        </div>
+
+        <div id="tab-saya" class="hidden space-y-4">
+            <div class="text-center p-6 rounded-3xl glass-card space-y-3">
+                <div class="relative w-20 h-20 mx-auto">
+                    <img id="profile-modal-avatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=Rusdi" class="w-full h-full rounded-full bg-slate-800 p-1 border-2 border-purple-400 object-cover">
+                    <button onclick="changeAvatar()" class="absolute bottom-0 right-0 bg-purple-600 text-white p-1.5 rounded-full text-xs shadow-md">📷</button>
+                </div>
+
+                <div>
+                    <h3 id="profile-modal-name" class="font-bold text-lg text-white">Rusdi Ngawi</h3>
+                    <p class="text-xs text-purple-300">ID Jomok: 0869-420-999-69</p>
+                </div>
+
+                <div class="inline-block bg-purple-500/20 text-purple-300 border border-purple-400/30 px-3 py-1 rounded-full text-xs font-semibold">
+                    Member VIP Terverifikasi
+                </div>
+            </div>
+
+            <div class="space-y-2">
+                <h4 class="font-bold text-xs uppercase text-purple-300 tracking-wider">Pengaturan Dompet Prank</h4>
+                
+                <div class="p-4 rounded-2xl glass-card space-y-3">
+                    <div>
+                        <label class="text-xs text-gray-300 block mb-1">Ubah Nama Pemilik</label>
+                        <input type="text" id="edit-username-input" value="Rusdi Ngawi" class="w-full bg-black/40 border border-purple-500/30 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-purple-400">
+                    </div>
+
+                    <div>
+                        <label class="text-xs text-gray-300 block mb-1">Set Jumlah Saldo (Rp)</label>
+                        <input type="number" id="edit-balance-input" value="999850000000" class="w-full bg-black/40 border border-purple-500/30 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-purple-400 font-mono">
+                    </div>
+
+                    <button onclick="saveProfileChanges()" class="w-full py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold transition">Simpan Perubahan</button>
+                </div>
+            </div>
+
+            <div class="p-4 rounded-2xl glass-card space-y-2 text-xs text-gray-400">
+                <p class="font-bold text-white">⚠️ Perhatian Disclaimer:</p>
+                <p>Aplikasi ini adalah 100% buatan fiktif/parodi (KW) untuk hiburan, lucu-lucuan, dan bercandaan antar teman. Tidak terhubung ke bank atau lembaga keuangan nyata manapun.</p>
+            </div>
+        </div>
+
+    </main>
+
+    <nav class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] bg-[#0c051d]/95 backdrop-blur-lg border-t border-white/10 px-4 py-2 z-40 flex justify-between items-center">
+        <button onclick="switchTab('beranda')" id="nav-beranda" class="nav-btn flex flex-col items-center gap-1 text-purple-400">
+            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path></svg>
+            <span class="text-[10px] font-semibold">Beranda</span>
+        </button>
+
+        <button onclick="switchTab('riwayat')" id="nav-riwayat" class="nav-btn flex flex-col items-center gap-1 text-gray-400 hover:text-purple-300">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+            <span class="text-[10px] font-semibold">Riwayat</span>
+        </button>
+
+        <button onclick="switchTab('scan')" id="nav-scan" class="nav-btn -mt-5 bg-gradient-to-tr from-purple-600 to-indigo-500 p-3.5 rounded-full text-white shadow-xl hover:scale-105 active:scale-95 transition border-2 border-[#130a2a]">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path></svg>
+        </button>
+
+        <button onclick="switchTab('promo')" id="nav-promo" class="nav-btn flex flex-col items-center gap-1 text-gray-400 hover:text-purple-300">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V6a2 2 0 10-2 2h2zm0 10 shadow-lg"></path></svg>
+            <span class="text-[10px] font-semibold">Wheel</span>
+        </button>
+
+        <button onclick="switchTab('saya')" id="nav-saya" class="nav-btn flex flex-col items-center gap-1 text-gray-400 hover:text-purple-300">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+            <span class="text-[10px] font-semibold">Saya</span>
+        </button>
+    </nav>
+</div>
+
+
+<!-- MODAL: FAKE TRANSFER FORM -->
+<div id="transfer-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-[#1a0f38] border border-purple-500/30 rounded-3xl w-full max-w-sm p-5 space-y-4 shadow-2xl">
+        <div class="flex justify-between items-center border-b border-white/10 pb-3">
+            <h3 class="font-bold text-white text-base">Kirim Uang (Transfer Kilat)</h3>
+            <button onclick="closeModal('transfer-modal')" class="text-gray-400 hover:text-white">✕</button>
+        </div>
+
+        <div class="space-y-3">
+            <div>
+                <label class="text-xs text-purple-300 block mb-1">Nama Penerima / Kontak</label>
+                <input type="text" id="transfer-name" placeholder="Contoh: Pak Vina / Mas Agus" class="w-full bg-black/50 border border-purple-500/30 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-purple-400">
+            </div>
+
+            <div>
+                <label class="text-xs text-purple-300 block mb-1">Bank / E-Wallet Tujuan</label>
+                <select id="transfer-bank" onchange="checkSukiPaySelection(this.value)" class="w-full bg-black/50 border border-purple-500/30 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-purple-400">
+                    <option value="JomokPay Premier">JomokPay Premier</option>
+                    <option value="Bank BCA">Bank BCA</option>
+                    <option value="Bank Mandiri">Bank Mandiri</option>
+                    <option value="Bank BRI">Bank BRI</option>
+                    <option value="DANA Digital">DANA Digital</option>
+                    <option value="GoPay">GoPay</option>
+                    <option value="SukiPay (TERBLOKIR)" class="text-red-400 font-bold">🚫 SukiPay (DILARANG & TERBLOKIR)</option>
+                </select>
+            </div>
+
+            <div id="sukipay-warning-box" class="hidden p-3 bg-red-950/90 border border-red-500 rounded-xl text-[11px] text-red-200 font-bold space-y-1">
+                <p>⛔ PERINGATAN INTEGRITAS SISTEM!</p>
+                <p class="font-normal text-[10px] text-red-300">Transfer ke SukiPay ditutup total oleh sistem karena risiko tinggi peretasan saldo oleh Suki. Silakan pilih bank/wallet resmi lainnya.</p>
+            </div>
+
+            <div>
+                <label class="text-xs text-purple-300 block mb-1">Nominal Transfer (Rp)</label>
+                <input type="number" id="transfer-amount" placeholder="500000" class="w-full bg-black/50 border border-purple-500/30 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-purple-400 font-mono">
+            </div>
+
+            <div>
+                <label class="text-xs text-purple-300 block mb-1">Catatan Pesan</label>
+                <input type="text" id="transfer-note" placeholder="Pembayaran transaksi resmi" class="w-full bg-black/50 border border-purple-500/30 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-purple-400">
+            </div>
+        </div>
+
+        <button onclick="processFakeTransfer()" class="w-full py-3 rounded-xl gradient-btn text-white font-bold text-xs shadow-lg hover:opacity-90 transition">
+            KONFIRMASI & KIRIM SEKARANG
+        </button>
+    </div>
+</div>
+
+<!-- MODAL: SUKI WARNING SPECIAL MODAL -->
+<div id="suki-warning-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-gradient-to-b from-red-950 via-slate-900 to-black border-2 border-red-500 rounded-3xl w-full max-w-sm p-6 space-y-4 text-center shadow-2xl relative">
+        <div class="w-16 h-16 rounded-full bg-red-600/30 text-red-500 border-2 border-red-500 flex items-center justify-center mx-auto text-3xl animate-bounce">
+            ⚠️
+        </div>
+        <div class="space-y-1">
+            <span class="bg-red-600 text-white font-black text-[10px] px-2.5 py-0.5 rounded uppercase tracking-widest">PERINGATAN SANGAT KERAS</span>
+            <h3 class="font-extrabold text-lg text-white">DARURAT KEAMANAN: SUKI</h3>
+        </div>
+        
+        <div class="p-3.5 bg-red-950/80 rounded-2xl border border-red-500/40 text-left space-y-2 text-xs text-red-200">
+            <p class="font-bold text-white">🚨 Mengapa Ada Peringatan Ini?</p>
+            <p class="leading-relaxed text-[11px] text-gray-300">
+                Laporan keamanan mengonfirmasi adanya peretasan massal yang didalangi pihak <strong class="text-yellow-300">SUKI</strong>. Saldo target akan terkuras habis jika melakukan interaksi finansial.
+            </p>
+            <div class="p-2 bg-black/60 rounded-xl border border-red-500/30 text-[11px] font-mono text-red-300">
+                ✖ Dilarang Transfer ke SukiPay<br>
+                ✖ Jangan Kirim OTP ke Agen Suki<br>
+                ✔ Gunakan hanya JomokPay Premier
+            </div>
+        </div>
+
+        <button onclick="closeModal('suki-warning-modal'); triggerSound('fanfare'); showToast('🛡️ Perlindungan Keamanan Aktif!')" class="w-full py-3 rounded-xl bg-red-600 hover:bg-red-700 text-white font-extrabold text-xs shadow-lg transition tracking-wide">
+            SAYA MENGERTI & AKAN WASPADA
+        </button>
+    </div>
+</div>
+
+<!-- MODAL: FAKE RECEIPT / STRUK TRANSAKSI (FOR SCREENSHOT PRANK) -->
+<div id="receipt-modal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white text-gray-800 rounded-3xl w-full max-w-sm p-6 space-y-4 shadow-2xl relative overflow-hidden font-sans">
+        
+        <!-- Success Badge Header -->
+        <div class="text-center space-y-2 pt-2">
+            <div class="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto text-3xl shadow-inner">
+                ✓
+            </div>
+            <h2 class="text-lg font-black text-gray-900 uppercase tracking-wide">TRANSAKSI BERHASIL</h2>
+            <p id="receipt-date" class="text-[11px] text-gray-500 font-mono">29 Sep 2026 • 12:00 WIB</p>
+        </div>
+
+        <div class="text-center py-2 border-y border-dashed border-gray-300">
+            <p class="text-xs text-gray-500 font-medium">Total Pembayaran</p>
+            <h1 id="receipt-amount" class="text-2xl font-black text-purple-900 font-mono">Rp 50.000.000</h1>
+        </div>
+
+        <!-- Detail Breakdown -->
+        <div class="space-y-2.5 text-xs">
+            <div class="flex justify-between">
+                <span class="text-gray-500">Penerima</span>
+                <span id="receipt-recipient" class="font-bold text-gray-900">Mas Agus</span>
+            </div>
+            <div class="flex justify-between">
+                <span class="text-gray-500">Metode / Bank</span>
+                <span id="receipt-bank" class="font-medium text-gray-800">DANA KW Super</span>
+            </div>
+            <div class="flex justify-between">
+                <span class="text-gray-500">Nomor Referensi</span>
+                <span id="receipt-ref" class="font-mono text-[10px] text-gray-600">JMK-994827103948</span>
+            </div>
+            <div class="flex justify-between">
+                <span class="text-gray-500">Pengirim</span>
+                <span id="receipt-sender" class="font-semibold text-purple-700">Rusdi Ngawi (JomokPay VIP)</span>
+            </div>
+            <div class="flex justify-between">
+                <span class="text-gray-500">Catatan</span>
+                <span id="receipt-note" class="font-italic text-gray-700">Uang jajan tambahan</span>
+            </div>
+        </div>
+
+        <!-- Footer Seal -->
+        <div class="pt-3 border-t border-gray-100 flex items-center justify-between text-[10px] text-gray-400">
+            <span>Terverifikasi oleh JomokPay Ngawi</span>
+            <span class="font-bold text-purple-600">KW-GUARANTEED</span>
+        </div>
+
+        <div class="flex gap-2 pt-2">
+            <button onclick="closeModal('receipt-modal')" class="w-full py-2.5 rounded-xl bg-gray-200 text-gray-800 font-bold text-xs hover:bg-gray-300 transition">Tutup</button>
+            <button onclick="showToast('📸 Silakan screenshot layar ini sekarang!')" class="w-full py-2.5 rounded-xl bg-purple-700 text-white font-bold text-xs hover:bg-purple-800 transition">Screenshot Struk</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: MEME SERVICE DISPLAY -->
+<div id="service-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-[#1a0f38] border border-purple-500/30 rounded-3xl w-full max-w-sm p-5 space-y-4 text-center shadow-2xl">
+        <div class="text-4xl">🎭</div>
+        <h3 id="service-title" class="font-bold text-lg text-white">Layanan Jomok</h3>
+        <p id="service-desc" class="text-xs text-purple-200 leading-relaxed">Deskripsi layanan parodi...</p>
+        <button onclick="closeModal('service-modal'); triggerSound('fanfare'); showToast('🎉 Pesanan fiktif telah diproses!')" class="w-full py-2.5 rounded-xl gradient-btn text-white font-bold text-xs shadow-lg">Pesan Sekarang (Gratis)</button>
+    </div>
+</div>
+
+<!-- TOAST NOTIFICATION -->
+<div id="toast" class="fixed top-5 left-1/2 -translate-x-1/2 bg-purple-900/95 text-white border border-purple-400 px-4 py-2.5 rounded-2xl shadow-2xl text-xs font-semibold z-50 transform -translate-y-20 opacity-0 transition-all duration-300 flex items-center gap-2 max-w-[90%]">
+    <span id="toast-message">Notifikasi</span>
+</div>
+
+
+<script>
+    // App State Management
+    const state = {
+        username: "Rusdi Ngawi",
+        balance: 999850000000,
+        coins: 69420000,
+        avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=Rusdi",
+        hideBalance: false,
+        transactions: [
+            { id: 'JMK-8831', recipient: 'Warung Bakso Mas Agus', bank: 'QRIS JomokPay', amount: 25000, note: 'Bakso Beranak + Es Teh', date: 'Hari ini • 11:45', type: 'out' },
+            { id: 'JMK-7721', recipient: 'Ghaffar VIP', bank: 'Bank BCA Jomok', amount: 15000000000, note: 'Sedekah harian Sultan', date: 'Kemarin • 20:10', type: 'in' },
+            { id: 'JMK-6612', recipient: 'Pak Vina Ngawi', bank: 'DANA KW Super', amount: 500000, note: 'Uang bensin motor revo', date: '28 Sep • 14:20', type: 'out' },
+            { id: 'JMK-5509', recipient: 'Lord Masbro', bank: 'GoPay Ngawi', amount: 1000000000, note: 'Sewa rakit darurat', date: '27 Sep • 09:15', type: 'out' }
+        ]
+    };
+
+    // Format currency to IDR
+    function formatRupiah(amount) {
+        return 'Rp ' + new Intl.NumberFormat('id-ID').format(amount);
+    }
+
+    // Sound FX Synthesis using Web Audio API (No external sound file dependency)
+    function triggerSound(type) {
+        try {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+
+            if (type === 'pop') {
+                osc.frequency.setValueAtTime(400, ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(800, ctx.currentTime + 0.08);
+                gain.gain.setValueAtTime(0.2, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.08);
+                osc.start();
+                osc.stop(ctx.currentTime + 0.08);
+            } else if (type === 'coin') {
+                osc.frequency.setValueAtTime(987.77, ctx.currentTime);
+                osc.frequency.setValueAtTime(1318.51, ctx.currentTime + 0.08);
+                gain.gain.setValueAtTime(0.25, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.25);
+                osc.start();
+                osc.stop(ctx.currentTime + 0.25);
+            } else if (type === 'fanfare') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(523.25, ctx.currentTime);
+                osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.1);
+                osc.frequency.setValueAtTime(783.99, ctx.currentTime + 0.2);
+                gain.gain.setValueAtTime(0.3, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+                osc.start();
+                osc.stop(ctx.currentTime + 0.4);
+            }
+        } catch(e) {
+            // Audio context fallback gracefully
+        }
+    }
+
+    // UI Updates
+    function updateUI() {
+        document.getElementById('balance-display').innerText = formatRupiah(state.balance);
+        document.getElementById('header-username').innerText = state.username;
+        document.getElementById('profile-modal-name').innerText = state.username;
+        document.getElementById('header-avatar').src = state.avatar;
+        document.getElementById('profile-modal-avatar').src = state.avatar;
+        document.getElementById('coins-display').innerText = new Intl.NumberFormat('id-ID').format(state.coins) + ' Coin';
+
+        renderHistory();
+    }
+
+    function toggleBalanceVisibility() {
+        triggerSound('pop');
+        state.hideBalance = !state.hideBalance;
+        if (state.hideBalance) {
+            document.getElementById('balance-display').classList.add('hidden');
+            document.getElementById('hidden-balance-display').classList.remove('hidden');
+        } else {
+            document.getElementById('balance-display').classList.remove('hidden');
+            document.getElementById('hidden-balance-display').classList.add('hidden');
+        }
+    }
+
+    // Tab Navigation Switcher
+    function switchTab(tabName) {
+        triggerSound('pop');
+        const tabs = ['beranda', 'riwayat', 'scan', 'promo', 'saya'];
+        
+        tabs.forEach(t => {
+            const el = document.getElementById('tab-' + t);
+            const navBtn = document.getElementById('nav-' + t);
+            if (t === tabName) {
+                el.classList.remove('hidden');
+                if (navBtn && t !== 'scan') navBtn.className = "nav-btn flex flex-col items-center gap-1 text-purple-400";
+            } else {
+                el.classList.add('hidden');
+                if (navBtn && t !== 'scan') navBtn.className = "nav-btn flex flex-col items-center gap-1 text-gray-400 hover:text-purple-300";
+            }
+        });
+
+        if (tabName === 'promo') {
+            initWheel();
+        }
+    }
+
+    // Toast Notification System
+    let toastTimeout;
+    function showToast(msg) {
+        const toast = document.getElementById('toast');
+        document.getElementById('toast-message').innerText = msg;
+        toast.classList.remove('-translate-y-20', 'opacity-0');
+        toast.classList.add('translate-y-0', 'opacity-100');
+
+        clearTimeout(toastTimeout);
+        toastTimeout = setTimeout(() => {
+            toast.classList.add('-translate-y-20', 'opacity-0');
+            toast.classList.remove('translate-y-0', 'opacity-100');
+        }, 3000);
+    }
+
+    // Render Recent & Full History Lists
+    function renderHistory() {
+        const homeList = document.getElementById('home-history-list');
+        const fullList = document.getElementById('full-history-list');
+
+        let html = '';
+        state.transactions.forEach((tx, idx) => {
+            const isOut = tx.type === 'out';
+            const icon = isOut ? '↗️' : '↘️';
+            const amountColor = isOut ? 'text-white' : 'text-emerald-400';
+            const amountPrefix = isOut ? '- ' : '+ ';
+
+            html += `
+                <div onclick="openReceiptDetail(${idx})" class="p-3 rounded-2xl glass-card flex items-center justify-between cursor-pointer hover:bg-white/10 active:scale-95 transition">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl ${isOut ? 'bg-purple-900/60 text-purple-300' : 'bg-emerald-900/60 text-emerald-300'} flex items-center justify-center text-lg border border-white/10">
+                            ${icon}
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-xs text-white">${tx.recipient}</h4>
+                            <p class="text-[10px] text-gray-400">${tx.date} • ${tx.bank}</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <span class="font-bold text-xs font-mono ${amountColor}">${amountPrefix}${formatRupiah(tx.amount)}</span>
+                        <p class="text-[9px] text-purple-300">Klik Struk</p>
+                    </div>
+                </div>
+            `;
+        });
+
+        if (homeList) homeList.innerHTML = html;
+        if (fullList) fullList.innerHTML = html;
+    }
+
+    // Modal Handlers
+    function openModal(id) {
+        triggerSound('pop');
+        document.getElementById(id).classList.remove('hidden');
+    }
+
+    function closeModal(id) {
+        triggerSound('pop');
+        document.getElementById(id).classList.add('hidden');
+    }
+
+    function openTransferModal() {
+        openModal('transfer-modal');
+    }
+
+    function openRequestModal() {
+        triggerSound('coin');
+        showToast('📥 Link Minta Saldo JomokPay berhasil disalin!');
+    }
+
+    function openTopUpModal() {
+        triggerSound('fanfare');
+        state.balance += 10000000;
+        updateUI();
+        showToast('💳 Top Up Rp 10.000.000 berhasil disimulasikan!');
+    }
+
+    function checkSukiPaySelection(val) {
+        const warnBox = document.getElementById('sukipay-warning-box');
+        if (val.includes('SukiPay')) {
+            warnBox.classList.remove('hidden');
+            triggerSound('pop');
+        } else {
+            warnBox.classList.add('hidden');
+        }
+    }
+
+    function showSukiWarningModal() {
+        triggerSound('pop');
+        openModal('suki-warning-modal');
+    }
+
+    // Process Fake Transfer with SukiPay Guardrail
+    function processFakeTransfer() {
+        const name = document.getElementById('transfer-name').value || 'Penerima';
+        const bank = document.getElementById('transfer-bank').value;
+        const amount = parseInt(document.getElementById('transfer-amount').value) || 500000;
+        const note = document.getElementById('transfer-note').value || 'Transfer Kilat JomokPay';
+
+        if (bank.includes('SukiPay')) {
+            triggerSound('pop');
+            showSukiWarningModal();
+            return;
+        }
+
+        const newTx = {
+            id: 'JMK-' + Math.floor(100000 + Math.random() * 900000),
+            recipient: name,
+            bank: bank,
+            amount: amount,
+            note: note,
+            date: 'Hari ini • ' + new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB',
+            type: 'out'
+        };
+
+        state.transactions.unshift(newTx);
+        state.balance = Math.max(0, state.balance - amount);
+        updateUI();
+
+        closeModal('transfer-modal');
+        openReceiptDetail(0);
+        confetti({ particleCount: 70, spread: 70, origin: { y: 0.6 } });
+        triggerSound('fanfare');
+    }
+
+    // Show Detailed Receipt
+    function openReceiptDetail(index) {
+        const tx = state.transactions[index];
+        if (!tx) return;
+
+        document.getElementById('receipt-date').innerText = tx.date;
+        document.getElementById('receipt-amount').innerText = formatRupiah(tx.amount);
+        document.getElementById('receipt-recipient').innerText = tx.recipient;
+        document.getElementById('receipt-bank').innerText = tx.bank;
+        document.getElementById('receipt-ref').innerText = tx.id;
+        document.getElementById('receipt-sender').innerText = state.username + ' (JomokPay VIP)';
+        document.getElementById('receipt-note').innerText = tx.note || '-';
+
+        openModal('receipt-modal');
+    }
+
+    // QRIS Simulator
+    function simulateScan(name, amount) {
+        triggerSound('coin');
+        const newTx = {
+            id: 'JMK-QR-' + Math.floor(100000 + Math.random() * 900000),
+            recipient: name,
+            bank: 'QRIS JomokPay',
+            amount: amount,
+            note: 'Pembayaran QRIS Merchant',
+            date: 'Hari ini • ' + new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB',
+            type: 'out'
+        };
+
+        state.transactions.unshift(newTx);
+        state.balance = Math.max(0, state.balance - amount);
+        updateUI();
+
+        openReceiptDetail(0);
+        confetti({ particleCount: 60, spread: 80, origin: { y: 0.5 } });
+    }
+
+    // Profile & Customizer Functions
+    function openProfileModal() {
+        switchTab('saya');
+    }
+
+    function saveProfileChanges() {
+        const newName = document.getElementById('edit-username-input').value;
+        const newBalance = parseInt(document.getElementById('edit-balance-input').value);
+
+        if (newName) state.username = newName;
+        if (!isNaN(newBalance)) state.balance = newBalance;
+
+        updateUI();
+        triggerSound('fanfare');
+        showToast('✅ Profile & Saldo KW berhasil diperbarui!');
+    }
+
+    function changeAvatar() {
+        const seeds = ['Amba', 'Rusdi', 'Agus', 'Ghaffar', 'Masbro', 'NgawiVIP'];
+        const randomSeed = seeds[Math.floor(Math.random() * seeds.length)] + Math.floor(Math.random() * 999);
+        state.avatar = `https://api.dicebear.com/7.x/bottts/svg?seed=${randomSeed}`;
+        updateUI();
+        triggerSound('pop');
+        showToast('📷 Avatar baru berhasil dipasang!');
+    }
+
+    // Spin Wheel Implementation
+    let wheelCanvas, ctx;
+    const prizes = ['100 Miliar', 'Zonk Amba', '500 Miliar', 'Bakso Agus', '1 Triliun', 'AmbaRide'];
+    const colors = ['#8b5cf6', '#6d28d9', '#4c1d95', '#a855f7', '#7c3aed', '#5b21b6'];
+    let isSpinning = false;
+
+    function initWheel() {
+        wheelCanvas = document.getElementById('wheelCanvas');
+        if (!wheelCanvas) return;
+        ctx = wheelCanvas.getContext('2d');
+        drawWheel(0);
+    }
+
+    function drawWheel(angle) {
+        const numPrizes = prizes.length;
+        const arc = (2 * Math.PI) / numPrizes;
+        const radius = wheelCanvas.width / 2;
+
+        ctx.clearRect(0, 0, wheelCanvas.width, wheelCanvas.height);
+
+        for (let i = 0; i < numPrizes; i++) {
+            const currentAngle = angle + i * arc;
+            ctx.beginPath();
+            ctx.fillStyle = colors[i % colors.length];
+            ctx.moveTo(radius, radius);
+            ctx.arc(radius, radius, radius, currentAngle, currentAngle + arc);
+            ctx.fill();
+
+            // Text
+            ctx.save();
+            ctx.translate(radius, radius);
+            ctx.rotate(currentAngle + arc / 2);
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 12px Plus Jakarta Sans';
+            ctx.fillText(prizes[i], radius / 2.2, 4);
+            ctx.restore();
+        }
+    }
+
+    function spinWheel() {
+        if (isSpinning) return;
+        isSpinning = true;
+        triggerSound('coin');
+
+        let currentAngle = 0;
+        const spinAngle = Math.PI * 10 + Math.random() * Math.PI * 4;
+        const duration = 3000;
+        const start = performance.now();
+
+        function animateWheel(time) {
+            const elapsed = time - start;
+            if (elapsed < duration) {
+                const progress = elapsed / duration;
+                // Ease out cubic
+                const easeOut = 1 - Math.pow(1 - progress, 3);
+                currentAngle = spinAngle * easeOut;
+                drawWheel(currentAngle);
+                requestAnimationFrame(animateWheel);
+            } else {
+                isSpinning = false;
+                state.balance += 100000000000;
+                updateUI();
+                confetti({ particleCount: 100, spread: 100, origin: { y: 0.5 } });
+                triggerSound('fanfare');
+                showToast('🎉 SELAMAT! Anda memenangkan Rp 100.000.000.000 Saldo Jomok!');
+            }
+        }
+
+        requestAnimationFrame(animateWheel);
+    }
+
+    // Initialize App on DOM Load
+    window.onload = function() {
+        updateUI();
+    };
+</script>
+</body>
+</html>
